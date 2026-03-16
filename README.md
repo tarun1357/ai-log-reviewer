@@ -10,7 +10,7 @@ A high-performance, concurrent log analysis pipeline built in Go. This tool simu
 *   **Multi-Tier Anomaly Detection:**
     *   **Rule-Based:** Detects timeouts, excessive latency, missing microservice hops, and error spikes.
     *   **Global Sliding Window:** Aggregates system-wide errors and triggers a SEV-1 `GLOBAL_SYSTEM_SPIKE` if >10 errors occur within any 1-minute window natively.
-*   **AI Root Cause Analysis:** Integrates with the OpenAI API. It mathematically slices token windows to prevent overflows on massive stack traces and uses robust Regex fallback extraction to guarantee stable JSON parsing from the LLM.
+*   **AI Root Cause Analysis:** Integrates with the **NVIDIA NIM API** (defaulting to `meta/llama3-70b-instruct`). It mathematically slices token windows to prevent overflows on massive stack traces and uses robust Regex fallback extraction to guarantee stable JSON parsing from the LLM.
 *   **CLI Dashboard:** Beautifully styled, ANSI-colored terminal output featuring a high-level Incident Dashboard and specific recommended actions per anomalous request.
 
 ## 🏗️ Architecture Pipeline
@@ -19,25 +19,25 @@ A high-performance, concurrent log analysis pipeline built in Go. This tool simu
 2.  **Parse:** `parser.go` transforms raw text strings into structured `LogEntry` Go structs.
 3.  **Correlate:** `correlator.go` groups entries by `RequestID` and sorts them chronologically.
 4.  **Detect:** `detector.go` scans correlated groups against latency thresholds and rules.
-5.  **Analyze:** `llm.go` feeds anomalous groups into GPT-4o for natural language root cause summaries and actionable recommendations.
+5.  **Analyze:** `llm.go` feeds anomalous groups into the NVIDIA LLM for natural language root cause summaries and actionable recommendations.
 6.  **Alert:** `alerter.go` prints the colored ASCII dashboard to `stdout` and writes to `alerts.json`.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 *   [Go 1.21+](https://go.dev/) installed.
-*   An [OpenAI API Key](https://platform.openai.com/) (Required for the AI Analysis phase. Without it, the tool falls back to rule-based analysis).
+*   An [NVIDIA API Key](https://build.nvidia.com/settings/api-keys) (Required for the AI Analysis phase. Without it, the tool falls back to rule-based analysis).
 
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/ai-log-analyzer.git
-   cd ai-log-analyzer
+   git clone https://github.com/tarun1357/ai-log-reviewer.git
+   cd "ai log reviewer"
    ```
 
 2. Configure the environment:
-   Edit `configs/config.yaml` to set your desired simulation duration and provide your `openai_key`.
-   > ⚠️ **SECURITY WARNING:** Never commit your real `openai_key` to GitHub! Make sure `configs/config.yaml` is added to your `.gitignore`.
+   Edit `configs/config.yaml` to set your desired simulation duration and provide your `nvidia_key`.
+   > ⚠️ **SECURITY WARNING:** Never commit your real `nvidia_key` to GitHub! Make sure `configs/config.yaml` is added to your `.gitignore` or export it as an environment variable (`export NVIDIA_API_KEY="your-key"`).
 
 ### Execution
 Run the full simulation and analysis pipeline step-by-step:

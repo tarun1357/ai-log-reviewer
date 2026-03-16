@@ -1,0 +1,23 @@
+# AI Log Analyzer Configuration
+
+log_dir: "./logs"
+
+services:
+  - api-gateway
+  - auth-service
+  - order-service
+  - payment-service
+  - inventory-service
+
+sim_duration: "30s"
+sim_rate_per_sec: 5
+
+correlation_window: "10s"
+latency_threshold: "500ms"
+
+# NVIDIA NIM API settings (leave nvidia_key empty to skip LLM analysis)
+nvidia_key: "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"
+nvidia_model: "meta/llama3-70b-instruct"
+
+alert_file: "./alerts.json"
+webhook_url: ""
