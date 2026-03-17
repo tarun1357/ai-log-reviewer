@@ -15,8 +15,9 @@ import (
 
 // openAIRequest / openAIResponse model the Chat Completions API.
 type openAIRequest struct {
-	Model    string          `json:"model"`
-	Messages []openAIMessage `json:"messages"`
+	Model       string          `json:"model"`
+	Messages    []openAIMessage `json:"messages"`
+	Temperature float32         `json:"temperature"`
 }
 type openAIMessage struct {
 	Role    string `json:"role"`
@@ -62,6 +63,7 @@ func callLLM(report models.AnomalyReport, apiKey, model string) (models.Diagnosi
 			{Role: "system", Content: "You are an expert distributed systems engineer performing root cause analysis on microservice logs. Analyze the logs and deduce which service caused the fault. Respond ONLY with valid JSON in this format: {\"root_cause\": \"...\", \"recommendation\": \"...\", \"severity\": \"critical|warning|info\"}. Do not wrap the JSON in markdown code blocks or add introductory text."},
 			{Role: "user", Content: prompt},
 		},
+		Temperature: 0.1,
 	}
 
 	body, err := json.Marshal(reqBody)
@@ -111,6 +113,7 @@ func callLLM(report models.AnomalyReport, apiKey, model string) (models.Diagnosi
 	content = strings.TrimSpace(content)
 
 	// In case the model ignored directions and prepended/appended text, attempt regex match.
+	// Prevented possible crash if model adds extra text
 	re := regexp.MustCompile(`(?s)\{.*\}`)
 	if match := re.FindString(content); match != "" {
 		content = match
@@ -138,9 +141,9 @@ func buildPrompt(report models.AnomalyReport) string {
 			sb.WriteString(fmt.Sprintf("  [%s] %s | %s | %s | latency=%dms\n",
 				e.Timestamp.Format(time.RFC3339), e.Service, e.Level, e.Message, e.Latency.Milliseconds()))
 		}
-		
+
 		sb.WriteString(fmt.Sprintf("\n  ... [%d logs omitted to fit token limits] ...\n\n", len(entries)-50))
-		
+
 		for _, e := range entries[len(entries)-30:] {
 			sb.WriteString(fmt.Sprintf("  [%s] %s | %s | %s | latency=%dms\n",
 				e.Timestamp.Format(time.RFC3339), e.Service, e.Level, e.Message, e.Latency.Milliseconds()))
